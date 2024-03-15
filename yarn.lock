@@ -180,6 +180,11 @@ htmlparser2@^8.0.1:
     domutils "^3.0.1"
     entities "^4.4.0"
 
+jalali-date@^1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/jalali-date/-/jalali-date-1.1.4.tgz#ccefd1f909541a9f36d774b4dfe7322d58610ef1"
+  integrity sha512-uahw/VGFvy5LntCrbeTkCrxtH9J2pxkjvb4TQtsM7PjkMBR1otpaYJkX7PCF5GfVkMP1hTI3CdQw0TAtEs3g1A==
+
 mime-db@1.52.0:
   version "1.52.0"
   resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.52.0.tgz#bbabcdc02859f4987301c856e3387ce5ec43bf70"

@@ -9,10 +9,14 @@ require("dotenv").config();
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
 // Function to scrape the website and collect links
-async function scrapeAndCollectLinks(page = 1, collectedLinks = new Set()) {
+async function scrapeAndCollectLinks(
+  _url,
+  page = 1,
+  collectedLinks = new Set()
+) {
   try {
     // Construct URL with page parameter
-    const url = `${process.env.URL}&page=${page}`;
+    const url = `${_url}&page=${page}`;
 
     // Fetch HTML from the URL
     const response = await axios.get(url);
@@ -43,7 +47,7 @@ async function scrapeAndCollectLinks(page = 1, collectedLinks = new Set()) {
       });
 
     // Continue pagination and collect links
-    return scrapeAndCollectLinks(page + 1, collectedLinks);
+    return scrapeAndCollectLinks(_url, page + 1, collectedLinks);
   } catch (error) {
     console.error("Error:", error);
     return Array.from(collectedLinks); // Convert Set to Array
@@ -51,7 +55,7 @@ async function scrapeAndCollectLinks(page = 1, collectedLinks = new Set()) {
 }
 
 // Function to scrape each link and collect data
-async function scrapeLink(link) {
+async function scrapeLink(_keywords = [], link) {
   try {
     // Fetch HTML from the link with a delay
     await new Promise((resolve) => setTimeout(resolve, 1000)); // Adjust the delay as needed
@@ -61,9 +65,7 @@ async function scrapeLink(link) {
     const $ = cheerio.load(html);
 
     // Define keywords to filter positions
-    const keywords = process.env.KEYWORDS.split(",").map((keyword) =>
-      keyword.trim()
-    );
+    const keywords = _keywords;
 
     // Extract data from each <li> element in the specified <ul>
     const jobDetails = $(
@@ -151,14 +153,14 @@ async function sendJobDetailsToTelegram(jobDetails) {
 }
 
 // Main function to orchestrate scraping and sending job details
-async function main() {
+async function main(url, keywords) {
   try {
-    const collectedLinks = await scrapeAndCollectLinks();
+    const collectedLinks = await scrapeAndCollectLinks(url);
     console.log("🚀 ~ main ~ collectedLinks length:", collectedLinks.length);
     // Loop through collected links and scrape job details
     const jobDetails = [];
     for (const link of collectedLinks) {
-      const jobDetail = await scrapeLink(link);
+      const jobDetail = await scrapeLink(keywords, link);
       if (jobDetail) {
         jobDetails.push(...jobDetail);
       }

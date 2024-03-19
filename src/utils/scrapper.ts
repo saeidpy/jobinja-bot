@@ -139,7 +139,7 @@ async function sendJobDetailsToTelegram(ctx: Context<Update>, jobDetails: {
             // Send each chunk as a separate message
             for (const chunk of jobDetailsText) {
                 // Send message to Telegram chat
-                await ctx.reply( chunk, {
+                await ctx.reply(chunk, {
                     parse_mode: "Markdown",
                 });
             }
@@ -149,6 +149,7 @@ async function sendJobDetailsToTelegram(ctx: Context<Update>, jobDetails: {
             console.log("No job details found.");
         }
     } catch (error) {
+        ctx.reply(error as string)
         console.error("Error sending job details to Telegram:", error);
     }
 }
@@ -174,6 +175,7 @@ async function scrapper(url: string, keywords: string[], ctx: Context<Update>) {
         // Send all job details to Telegram
         await sendJobDetailsToTelegram(ctx, jobDetails);
     } catch (error) {
+        ctx.reply(error as string)
         console.error("Error:", error);
     }
 }

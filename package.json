@@ -7,6 +7,7 @@
   "homepage": "https://github.com/sollidy/telegram-bot-vercel-boilerplate",
   "dependencies": {
     "@vercel/node": "^3.0.22",
+    "@vercel/postgres": "^0.7.2",
     "dotenv-cli": "^7.4.1",
     "fs": "^0.0.1-security",
     "telegraf": "^4.16.3"

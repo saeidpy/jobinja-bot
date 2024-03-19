@@ -4,11 +4,38 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { development, production } from './core';
 import { greeting } from './text';
 import scrapper from './utils/scrapper';
+import axios from 'axios';
 
 const BOT_TOKEN = process.env.BOT_TOKEN || '';
 const ENVIRONMENT = process.env.NODE_ENV || '';
 
 const bot = new Telegraf(BOT_TOKEN);
+
+
+// Function to write configuration data
+async function writeConfig(chatId: string, url: string, keywords: string = '') {
+  try {
+    const response = await axios.post('/api/add-conf', {
+      chatId,
+      url,
+      keywords,
+    });
+    console.log('Configuration updated successfully:', response.data);
+  } catch (error) {
+    console.error('Error updating configuration:', error);
+  }
+}
+
+// Function to read configuration data
+async function readConfig(chatId: string) {
+  try {
+    const response = await axios.get(`/api/add-conf?chatId=${chatId}`);
+    console.log('Configuration:', response.data);
+    return response.data
+  } catch (error) {
+    console.error('Error reading configuration:', error);
+  }
+}
 
 
 // Define commands and their descriptions
@@ -58,7 +85,7 @@ const commands = [
 bot.command("start", (ctx) => {
   ctx.reply(
     "Welcome to the job scraper bot! you can change your url and keywords on env file.",
-    Markup.keyboard([["/scrape"]])
+    Markup.keyboard([["/scrape", "/setting"]])
       .oneTime()
       .resize()
   );
@@ -84,15 +111,16 @@ bot.command("start", (ctx) => {
 // });
 
 // Handle /setkeywords command
-// bot.command("setkeywords", (ctx) => {
-//   const message = ctx.message.text.replace("/setkeywords", "").trim();
-//   if (!message) {
-//     ctx.reply(`Please set the keywords after the command`);
-//     return;
-//   }
-//   const keywords = message.split(",").map((keyword) => keyword.trim());
-//   ctx.reply(`Keywords set to: ${keywords.join(", ")}`);
-// });
+bot.command("setconf", async (ctx) => {
+  const message = ctx.message.text.replace("/setconf", "").trim();
+  if (!message) {
+    ctx.reply(`Please set the keywords after the command`);
+    return;
+  }
+  const keywords = message.split(",").map((keyword) => keyword.trim());
+  await writeConfig(ctx.chat.id.toString(), message)
+  ctx.reply(`Keywords set to: ${keywords.join(", ")}`);
+});
 
 // Handle /scrape command
 bot.command("scrape", async (ctx) => {
@@ -113,10 +141,12 @@ bot.command("scrape", async (ctx) => {
 });
 
 // Handle /start command
-bot.command("setting", (ctx) => {
+bot.command("setting", async (ctx) => {
   const url = process.env.SCRAP_URL
   const keywords = process.env.KEYWORDS
-  ctx.reply(`URL set to: ${url}\nKeywords set to: ${keywords}`);
+  const config = await readConfig(ctx.chat.id.toString())
+  console.log("🚀 ~ bot.command ~ config:", config)
+  ctx.reply(`URL set to: ${url}\nKeywords set to: ${config}`);
 });
 bot.on('message', greeting());
 

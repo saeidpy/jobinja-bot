@@ -30,10 +30,10 @@ const commands = [
     description:
       "Trigger the scraping process based on the configured settings.",
   },
-  // {
-  //   command: "/setting",
-  //   description: "View of the settings.",
-  // },
+  {
+    command: "/setting",
+    description: "View of the settings.",
+  },
   // {
   //   command: "/help",
   //   description: "Get information about all available commands.",
@@ -113,11 +113,11 @@ bot.command("scrape", async (ctx) => {
 });
 
 // Handle /start command
-// bot.command("setting", (ctx) => {
-//   const { url = '', keywords = [] } = readConfig()
-
-//   ctx.reply(`URL set to: ${url}\nKeywords set to: ${keywords.join(", ")}`);
-// });
+bot.command("setting", (ctx) => {
+  const url = process.env.SCRAP_URL
+  const keywords = process.env.KEYWORDS
+  ctx.reply(`URL set to: ${url}\nKeywords set to: ${keywords}`);
+});
 bot.on('message', greeting());
 
 //prod mode (Vercel)

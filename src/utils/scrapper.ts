@@ -45,9 +45,9 @@ async function scrapeAndCollectLinks(
 
         // Continue pagination and collect links
         return scrapeAndCollectLinks(_url, page + 1, collectedLinks);
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error:", error);
-        return Array.from(collectedLinks); // Convert Set to Array
+        throw Error(error)
     }
 }
 
@@ -55,7 +55,7 @@ async function scrapeAndCollectLinks(
 async function scrapeLink(_keywords: string[] = [], link: string) {
     try {
         // Fetch HTML from the link with a delay
-        await new Promise((resolve) => setTimeout(resolve, 500)); // Adjust the delay as needed
+        await new Promise((resolve) => setTimeout(resolve, 100)); // Adjust the delay as needed
         const response = await axios.get(link);
         const html = response.data;
         // Parse HTML using Cheerio
@@ -98,9 +98,9 @@ async function scrapeLink(_keywords: string[] = [], link: string) {
             .filter(Boolean); // Remove null values
 
         return jobDetails.length ? jobDetails : []; // Return an empty array if no matching job details are found
-    } catch (error) {
-        console.error("Error scraping link:", error);
-        return []; // Return an empty array in case of error
+    } catch (error: any) {
+        console.error("Error:", error);
+        throw Error(error)
     }
 }
 
@@ -148,8 +148,9 @@ async function sendJobDetailsToTelegram(ctx: Context<Update>, jobDetails: {
         } else {
             console.log("No job details found.");
         }
-    } catch (error) {
-        ctx.reply(error as string)
+    } catch (error: any) {
+        const message = new Error(error).message
+        ctx.reply(message as string)
         console.error("Error sending job details to Telegram:", error);
     }
 }
@@ -174,8 +175,9 @@ async function scrapper(url: string, keywords: string[], ctx: Context<Update>) {
 
         // Send all job details to Telegram
         await sendJobDetailsToTelegram(ctx, jobDetails);
-    } catch (error) {
-        ctx.reply(error as string)
+    } catch (error: any) {
+        const message = new Error(error).message
+        ctx.reply(message as string)
         console.error("Error:", error);
     }
 }

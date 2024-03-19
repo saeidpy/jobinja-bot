@@ -1,5 +1,5 @@
 import { Markup, Telegraf } from 'telegraf';
-
+const fs = require('fs');
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { development, production } from './core';
 import { greeting } from './text';
@@ -9,9 +9,31 @@ const BOT_TOKEN = process.env.BOT_TOKEN || '';
 const ENVIRONMENT = process.env.NODE_ENV || '';
 
 const bot = new Telegraf(BOT_TOKEN);
-// Define variables for URL and keywords
-let url = "";
-let keywords: string[] = [];
+// Function to read the configuration from config.json
+function readConfig() {
+  try {
+    return JSON.parse(fs.readFileSync('config.json', 'utf8'));
+  } catch (error) {
+    console.error('Error reading config:', error);
+    return {};
+  }
+}
+
+function writeConfig(newData: { url?: string; keywords?: string[] }) {
+  try {
+    // Read the existing configuration
+    const existingConfig = readConfig() ?? {};
+
+    // Merge the new data with the existing configuration
+    const mergedConfig = { ...existingConfig, ...newData };
+
+    // Write the merged configuration back to the file
+    fs.writeFileSync('config.json', JSON.stringify(mergedConfig, null, 2));
+    console.log('Config updated successfully.');
+  } catch (error) {
+    console.error('Error writing config:', error);
+  }
+}
 
 // Define commands and their descriptions
 const commands = [
@@ -81,7 +103,8 @@ bot.command("seturl", (ctx) => {
     return;
   }
 
-  url = message;
+  const url = message;
+  writeConfig({ url })
   ctx.reply(`URL set: [LINK](${url})`, { parse_mode: "Markdown" });
 });
 
@@ -92,13 +115,15 @@ bot.command("setkeywords", (ctx) => {
     ctx.reply(`Please set the keywords after the command`);
     return;
   }
-  keywords = message.split(",").map((keyword) => keyword.trim());
+  const keywords = message.split(",").map((keyword) => keyword.trim());
+  writeConfig({ keywords })
   ctx.reply(`Keywords set to: ${keywords.join(", ")}`);
 });
 
 // Handle /scrape command
 bot.command("scrape", async (ctx) => {
   try {
+    const { url = '', keywords = [] } = readConfig()
     if (!url) {
       return ctx.reply("Please set URL.");
     }
@@ -113,6 +138,8 @@ bot.command("scrape", async (ctx) => {
 
 // Handle /start command
 bot.command("setting", (ctx) => {
+  const { url = '', keywords = [] } = readConfig()
+
   ctx.reply(`URL set to: ${url}\nKeywords set to: ${keywords.join(", ")}`);
 });
 bot.on('message', greeting());

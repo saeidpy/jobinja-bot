@@ -1,5 +1,5 @@
 import axios from "axios";
-import cheerio from "cheerio";
+import { load } from "cheerio";
 const JDate = require('jalali-date');
 import { Context, Telegraf } from "telegraf";
 import { Update } from "telegraf/typings/core/types/typegram";
@@ -20,7 +20,7 @@ async function scrapeAndCollectLinks(
         const html = response.data;
 
         // Parse HTML using Cheerio
-        const $ = cheerio.load(html);
+        const $ = load(html);
 
         // Check if no results found
         if ($("div.c-jobSearch__noResult").length > 0) {
@@ -59,7 +59,7 @@ async function scrapeLink(_keywords: string[] = [], link: string) {
         const response = await axios.get(link);
         const html = response.data;
         // Parse HTML using Cheerio
-        const $ = cheerio.load(html);
+        const $ = load(html);
 
         // Define keywords to filter positions
         const keywords = _keywords;

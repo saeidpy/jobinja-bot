@@ -1,7 +1,6 @@
-import axios from "axios";
 import { load } from "cheerio";
 const JDate = require('jalali-date');
-import { Context, Telegraf } from "telegraf";
+import { Context } from "telegraf";
 import { Update } from "telegraf/typings/core/types/typegram";
 
 
@@ -16,38 +15,42 @@ async function scrapeAndCollectLinks(
         const url = `${_url}&page=${page}`;
 
         // Fetch HTML from the URL
-        const response = await axios.get(url);
-        const html = response.data;
+        const response = await fetch(url);
 
-        // Parse HTML using Cheerio
-        const $ = load(html);
+        if (response.ok) {
+            const html = await response.text();
 
-        // Check if no results found
-        if ($("div.c-jobSearch__noResult").length > 0) {
-            console.log("No more results found. Stopping pagination.");
-            return Array.from(collectedLinks); // Convert Set to Array
+            // Parse HTML using Cheerio
+            const $ = load(html);
+
+            // Check if no results found
+            if ($("div.c-jobSearch__noResult").length > 0) {
+                console.log("No more results found. Stopping pagination.");
+                return Array.from(collectedLinks); // Convert Set to Array
+            }
+
+            // Extract links from the ul.c-jobListView__list
+            $("ul.c-jobListView__list")
+                .find("li")
+                .each((index, element) => {
+                    const link = $(element)
+                        .find("div.o-listView__itemInfo > a")
+                        .attr("href");
+                    if (link) {
+                        // Split the link at the fifth occurrence of '/'
+                        const parts = link.split("/");
+                        const modifiedLink = parts.slice(0, 6).join("/");
+                        collectedLinks.add(modifiedLink); // Add to Set to ensure uniqueness
+                    }
+                });
+
+            // Continue pagination and collect links
+            return scrapeAndCollectLinks(_url, page + 1, collectedLinks);
         }
-
-        // Extract links from the ul.c-jobListView__list
-        $("ul.c-jobListView__list")
-            .find("li")
-            .each((index, element) => {
-                const link = $(element)
-                    .find("div.o-listView__itemInfo > a")
-                    .attr("href");
-                if (link) {
-                    // Split the link at the fifth occurrence of '/'
-                    const parts = link.split("/");
-                    const modifiedLink = parts.slice(0, 6).join("/");
-                    collectedLinks.add(modifiedLink); // Add to Set to ensure uniqueness
-                }
-            });
-
-        // Continue pagination and collect links
-        return scrapeAndCollectLinks(_url, page + 1, collectedLinks);
+        return []
     } catch (error: any) {
         console.error("Error:", error);
-        throw Error(error)
+        return []
     }
 }
 
@@ -56,48 +59,52 @@ async function scrapeLink(_keywords: string[] = [], link: string) {
     try {
         // Fetch HTML from the link with a delay
         await new Promise((resolve) => setTimeout(resolve, 100)); // Adjust the delay as needed
-        const response = await axios.get(link);
-        const html = response.data;
-        // Parse HTML using Cheerio
-        const $ = load(html);
+        const response = await fetch(link);
+        if (response.ok) {
 
-        // Define keywords to filter positions
-        const keywords = _keywords;
+            const html = await response.text();
+            // Parse HTML using Cheerio
+            const $ = load(html);
 
-        // Extract data from each <li> element in the specified <ul>
-        const jobDetails = $(
-            "section:not([class]) ul.o-listView__list.c-jobListView__list li.o-listView__item"
-        )
-            .map((index, element) => {
-                const $element = $(element);
-                // Extract company name
-                const companyName = $element
-                    .find("div > div.o-listView__itemInfo > ul > li:nth-child(1) > span")
-                    .text()
-                    .trim();
-                // Extract position
-                const position = $element
-                    .find("div > div.o-listView__itemInfo > h2 > a")
-                    .text()
-                    .trim();
-                // Extract link
-                const jobLink = $element
-                    .find("div > div.o-listView__itemInfo > h2 > a")
-                    .attr("href");
-                // Check if position name includes any of the keywords
-                const filtered = keywords.some((keyword) =>
-                    position.toLowerCase().includes(keyword)
-                );
-                // Return job details if position matches any keyword
-                if (filtered) {
-                    return { companyName, position, jobLink };
-                }
-                return null;
-            })
-            .get()
-            .filter(Boolean); // Remove null values
+            // Define keywords to filter positions
+            const keywords = _keywords;
 
-        return jobDetails.length ? jobDetails : []; // Return an empty array if no matching job details are found
+            // Extract data from each <li> element in the specified <ul>
+            const jobDetails = $(
+                "section:not([class]) ul.o-listView__list.c-jobListView__list li.o-listView__item"
+            )
+                .map((index, element) => {
+                    const $element = $(element);
+                    // Extract company name
+                    const companyName = $element
+                        .find("div > div.o-listView__itemInfo > ul > li:nth-child(1) > span")
+                        .text()
+                        .trim();
+                    // Extract position
+                    const position = $element
+                        .find("div > div.o-listView__itemInfo > h2 > a")
+                        .text()
+                        .trim();
+                    // Extract link
+                    const jobLink = $element
+                        .find("div > div.o-listView__itemInfo > h2 > a")
+                        .attr("href");
+                    // Check if position name includes any of the keywords
+                    const filtered = keywords.some((keyword) =>
+                        position.toLowerCase().includes(keyword)
+                    );
+                    // Return job details if position matches any keyword
+                    if (filtered) {
+                        return { companyName, position, jobLink };
+                    }
+                    return null;
+                })
+                .get()
+                .filter(Boolean); // Remove null values
+
+            return jobDetails.length ? jobDetails : []; // Return an empty array if no matching job details are found
+        }
+        return []
     } catch (error: any) {
         console.error("Error:", error);
         throw Error(error)

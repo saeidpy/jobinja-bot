@@ -131,14 +131,17 @@ async function sendJobDetailsToTelegram(ctx: Context<Update>, jobDetails: {
             const messageHeader = `${jobDetails.length} Postion found\n`;
             const nowDate = `Date: ${jdate.format("dddd DD MMMM YYYY")}\n\n`;
             const chunksOfJobs = splitArrayChunks(jobDetails, 12);
+            let counter = 0
             const jobDetailsText = chunksOfJobs.map(
-                (jobDetails) =>
+                (jobDetails, indx) =>
                     messageHeader +
                     nowDate +
                     jobDetails
                         .map(
-                            (job) =>
-                                `Company Name: ${job?.companyName}\nPosition: [${job?.position}](${job?.jobLink})\n`
+                            (job) => {
+                                counter++
+                                return `${counter}: Company Name: ${job?.companyName}\nPosition: [${job?.position}](${job?.jobLink})\n`
+                            }
                         )
                         .join("\n\n")
             );
@@ -175,7 +178,6 @@ async function scrapper(url: string, keywords: string[], ctx: Context<Update>) {
         }[] = [];
         for (const link of collectedLinks) {
             const jobDetail = await scrapeLink(keywords, link);
-            ctx.reply(`Log:${jobDetail.length} jobDetailes found`)
             if (jobDetail) {
                 jobDetails.push(...jobDetail);
             }

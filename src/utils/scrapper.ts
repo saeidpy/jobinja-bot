@@ -175,7 +175,7 @@ async function scrapper(url: string, keywords: string[], ctx: Context<Update>) {
         }[] = [];
         for (const link of collectedLinks) {
             const jobDetail = await scrapeLink(keywords, link);
-            ctx.reply(`Log:${jobDetail.length} companes found`)
+            ctx.reply(`Log:${jobDetail.length} jobDetailes found`)
             if (jobDetail) {
                 jobDetails.push(...jobDetail);
             }

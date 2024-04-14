@@ -77,24 +77,24 @@ bot.command("setkeywords", async (ctx) => {
 });
 
 // Handle /scrape command
-bot.command("scrape", async (ctx) => {
-  try {
-    const config = await readConfig(ctx.chat.id.toString())
+// bot.command("scrape", async (ctx) => {
+//   try {
+//     const config = await readConfig(ctx.chat.id.toString())
 
-    const url = config?.url as string ?? ''
-    const keywords = (config?.keywords as string ?? '').split(",").map((keyword) => keyword.trim())
+//     const url = config?.url as string ?? ''
+//     const keywords = (config?.keywords as string ?? '').split(",").map((keyword) => keyword.trim())
 
-    if (!url) {
-      return ctx.reply("Please set URL on env.");
-    }
-    ctx.reply(`please waite for scraping... `);
+//     if (!url) {
+//       return ctx.reply("Please set URL on env.");
+//     }
+//     ctx.reply(`please waite for scraping... `);
 
-   await scrapper(url, keywords, ctx);
-  } catch (error) {
-    console.error("Error:", error);
-    ctx.reply("An error occurred while scraping job details.");
-  }
-});
+//    await scrapper(url, keywords, ctx);
+//   } catch (error) {
+//     console.error("Error:", error);
+//     ctx.reply("An error occurred while scraping job details.");
+//   }
+// });
 
 // Handle /start command
 bot.command("setting", async (ctx) => {

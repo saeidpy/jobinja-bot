@@ -3,13 +3,13 @@
 module.exports = async (req, res) => {
   try {
     const { endpoint } = req.query;
-    
+
     if (!endpoint) {
       return res.status(400).json({ error: 'Endpoint parameter is required' });
     }
 
     // Make a request to the specified endpoint
-    const response = await fetch(endpoint);
+    const response = await fetch(endpoint, { headers: req.headers });
 
     // Check if the request was successful
     if (!response.ok) {

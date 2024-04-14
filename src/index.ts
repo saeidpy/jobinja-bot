@@ -89,7 +89,7 @@ bot.command("scrape", async (ctx) => {
     }
     ctx.reply(`please waite for scraping... `);
 
-   await scrapper(url, keywords, ctx);
+    await scrapper(url, keywords, ctx);
   } catch (error) {
     console.error("Error:", error);
     ctx.reply("An error occurred while scraping job details.");
@@ -105,5 +105,7 @@ bot.on('message', greeting());
 
 //prod mode (Vercel)
 export const startVercel = async (req: VercelRequest, res: VercelResponse) => {
-  await production(req, res, bot);
+  ENVIRONMENT === 'producton' ?
+    await production(req, res, bot) :
+    await development(bot);
 };

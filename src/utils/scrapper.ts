@@ -15,7 +15,7 @@ async function scrapeAndCollectLinks(
         const url = `${_url}&page=${page}`;
 
         // Fetch HTML from the URL
-        const response = await fetch(url);
+        const response = await fetch(url, { headers: { 'user-agent': 'PostmanRuntime/7.37.3' } });
 
         if (response.ok) {
             const html = await response.text();
@@ -59,7 +59,7 @@ async function scrapeLink(_keywords: string[] = [], link: string) {
     try {
         // Fetch HTML from the link with a delay
         await new Promise((resolve) => setTimeout(resolve, 100)); // Adjust the delay as needed
-        const response = await fetch(link);
+        const response = await fetch(link, { headers: { 'user-agent': 'PostmanRuntime/7.37.3' } });
         if (response.ok) {
 
             const html = await response.text();

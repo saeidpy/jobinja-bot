@@ -166,7 +166,7 @@ async function sendJobDetailsToTelegram(ctx: Context<Update>, jobDetails: {
 async function scrapper(url: string, keywords: string[], ctx: Context<Update>) {
     try {
         const collectedLinks = await scrapeAndCollectLinks(url);
-        console.log("🚀 ~ main ~ collectedLinks length:", collectedLinks.length);
+        ctx.reply(`Log:${collectedLinks.length} companes found`)
         // Loop through collected links and scrape job details
         const jobDetails: {
             companyName?: string;
@@ -175,6 +175,7 @@ async function scrapper(url: string, keywords: string[], ctx: Context<Update>) {
         }[] = [];
         for (const link of collectedLinks) {
             const jobDetail = await scrapeLink(keywords, link);
+            ctx.reply(`Log:${jobDetail.length} companes found`)
             if (jobDetail) {
                 jobDetails.push(...jobDetail);
             }

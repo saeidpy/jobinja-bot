@@ -89,7 +89,7 @@ bot.command("scrape", async (ctx) => {
     }
     ctx.reply(`please waite for scraping... `);
 
-    await scrapper(url, keywords, ctx);
+    scrapper(url, keywords, ctx);
   } catch (error) {
     console.error("Error:", error);
     ctx.reply("An error occurred while scraping job details.");

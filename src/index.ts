@@ -36,6 +36,8 @@ async function readConfig(chatId: string) {
 
 // Handle /start command
 bot.command("start", (ctx) => {
+  console.log(ctx);
+
   ctx.reply(
     "Welcome to the job scraper bot! you can change your url and keywords on /setkeywords and /seturl commands.",
     Markup.keyboard([["/scrape", "/setting"], ['/setkeywords', '/seturl']])
@@ -105,5 +107,5 @@ bot.on('message', greeting());
 
 //prod mode (Vercel)
 export const startVercel = async (req: VercelRequest, res: VercelResponse) => {
-  await development(bot);
+  await production(req, res, bot);
 };
